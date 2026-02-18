@@ -2,7 +2,7 @@ use std::io::Read;
 
 use crate::{
     lexer::{Lexer, Token, TokenKind},
-    memory::PageTableMemory,
+    memory::{Cell, PageTableMemory},
 };
 
 pub fn run(source: &str) {
@@ -10,18 +10,20 @@ pub fn run(source: &str) {
     let mut pointer = 0;
     let tokens = Lexer::new(source).collect::<Vec<Token>>();
     let mut pos = 0;
+    let mut read_buf = [0; 1];
+    let mut stdin = std::io::stdin();
     while pos < tokens.len() {
         match tokens[pos].kind {
             TokenKind::Plus => {
-                if memory[pointer] == u8::MAX {
+                if memory[pointer] == Cell::MAX {
                     memory[pointer] = 0;
                 } else {
                     memory[pointer] += 1;
                 }
             }
             TokenKind::Minus => {
-                if memory[pointer] == 0 {
-                    memory[pointer] = u8::MAX;
+                if memory[pointer] == Cell::MIN {
+                    memory[pointer] = Cell::MAX;
                 } else {
                     memory[pointer] -= 1;
                 }
@@ -44,9 +46,10 @@ pub fn run(source: &str) {
             }
             TokenKind::Print => print!("{}", memory[pointer] as char),
             TokenKind::Read => {
-                let mut buf = [0; 1];
-                std::io::stdin().read_exact(&mut buf).unwrap();
-                memory[pointer] = buf[0];
+                stdin
+                    .read_exact(&mut read_buf)
+                    .expect("Failed to read from stdin");
+                memory[pointer] = read_buf[0];
             }
             TokenKind::Ignored => {}
         }
