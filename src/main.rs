@@ -2,9 +2,9 @@ use std::{fs, path::PathBuf};
 
 use clap::Parser;
 
+mod compiler;
 mod interpreter;
 mod lexer;
-mod memory;
 
 #[derive(Debug, Clone, PartialEq, Eq, Parser)]
 struct Cli {
