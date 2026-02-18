@@ -1,6 +1,9 @@
 use std::ops::{Index, IndexMut};
 
-pub trait Memory: Index<usize, Output = u8> + IndexMut<usize> {}
+/// Minimal memory unit
+pub type Cell = u8;
+
+pub trait Memory: Index<usize, Output = Cell> + IndexMut<usize> {}
 
 const PAGE_SIZE: usize = 1024;
 
@@ -25,7 +28,7 @@ impl Into<(usize, usize)> for PageTableIndex {
 }
 
 pub struct PageTableMemory {
-    pages: Vec<Option<Box<Vec<u8>>>>,
+    pages: Vec<Option<Box<Vec<Cell>>>>,
 }
 
 impl PageTableMemory {
@@ -39,7 +42,7 @@ impl PageTableMemory {
         (index / PAGE_SIZE, index % PAGE_SIZE).into()
     }
 
-    fn ensure_page(&mut self, index: &PageTableIndex) -> &mut Vec<u8> {
+    fn ensure_page(&mut self, index: &PageTableIndex) -> &mut Vec<Cell> {
         if index.page_index >= self.pages.len() {
             self.pages.resize_with(index.page_index + 1, || None);
         }
@@ -48,7 +51,7 @@ impl PageTableMemory {
 }
 
 impl Index<usize> for PageTableMemory {
-    type Output = u8;
+    type Output = Cell;
 
     fn index(&self, index: usize) -> &Self::Output {
         let index = self.to_index(index);
